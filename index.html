@@ -20,27 +20,54 @@
 
         let painting = false
 
-        ctx.fillStyle = 'green';
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 10;
+        ctx.lineCap = "round";
 
-        canvas.onmousedown = () => {
-            painting = true
+        function drawLine(x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
         }
 
-        canvas.onmousemove = (e) => {
-            if (painting === true) {
-                ctx.beginPath();
-                ctx.arc(e.clientX, e.clientY, 5, 0, 2 * Math.PI);
-                ctx.fill();
-            } else {
-                console.log('鼠标松开，什么都不做')
+        var isTouchDevice = 'ontouchstart' in document.documentElement;// true为触屏，false为鼠标（非触屏）
+
+        let last;
+
+        if (isTouchDevice) {
+            //触屏
+            canvas.ontouchstart = (e) => {
+                let x = e.touches[0].clientX
+                let y = e.touches[0].clientY
+                last = [x, y]
+            }
+            canvas.ontouchmove = (e) => {
+                let x = e.touches[0].clientX
+                let y = e.touches[0].clientY
+                drawLine(last[0], last[1], x, y)
+                last = [x, y]
+            }
+        } else {
+            //鼠标
+            canvas.onmousedown = (e) => {
+                painting = true
+                last = [e.clientX, e.clientY]
+            }
+            canvas.onmousemove = (e) => {
+                if (painting === true) {
+                    let x = e.clientX
+                    let y = e.clientY
+                    drawLine(last[0], last[1], x, y)
+                    last = [x, y]
+                }
+            }
+            canvas.onmouseup = (e) => {
+                painting = false
             }
         }
 
-        canvas.onmouseup = () => {
-            painting = false
-        }
-
-        // 经过实践确认：以下代码无法实现画板功能。
+        // 经过实践确认：以下代码功耗奇高无法实现画板功能。
         // canvas.onmousemove = (e) => {
         //     console.log(e.clientX)
         //     console.log(e.clientY)
